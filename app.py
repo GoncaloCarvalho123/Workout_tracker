@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -19,32 +19,44 @@ class Workout(db.Model):
                 "weight": self.weight,
                 "reps": self.reps}
 
+# create database table with db model context
 with app.app_context():
     db.create_all()
 
+# render html file with root url
+@app.route('/')
+def index():
+    return render_template('index.html')
 
+# GET route for getting all the workout objects in workouts
 @app.route('/workout' , methods = ['GET'])
-def getWorkout() :
+def getWorkout():
     workouts = []
     workouts_list = Workout.query.all()
     if not workouts_list:
         return jsonify({"message" : "No workouts have been logged"}), 200
+    # store each workout object as dict in workouts list
     workouts = [w.to_dict() for w in workouts_list]
     return jsonify(workouts), 200
     
+# Post route for posting a new workout 
 @app.route('/workout' , methods = ['POST'])
 def postWorkout():
     try: 
+        # read json that will be sent in from javascript
         data = request.json
         workout = Workout(exercise=data["exercise"],weight = data["weight"], reps = data["reps"])
+        # add workout object to database table
         db.session.add(workout)
         db.session.commit()
+        # always return success of failure message in json to javascript
         return jsonify({"message": "Workout added", "workout" : workout.to_dict()}), 201
     except KeyError:
         return jsonify({"error": "Missing required field"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# Delete route by capturing workout id
 @app.route('/workout/<int:id>', methods =['DELETE'])
 def delete_workout(id):
     try:
@@ -54,7 +66,7 @@ def delete_workout(id):
         else:
             db.session.delete(workout_id)
             db.session.commit()
-            return jsonify({"message" : "workout was successfully deleted"})
+            return jsonify({"message" : "workout was successfully deleted"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
