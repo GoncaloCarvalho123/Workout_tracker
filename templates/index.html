@@ -2,24 +2,32 @@
     <html>
     <head>
         <script src ="/static/app.js" defer></script>
+        <link rel="stylesheet" href ="/static/style.css">
         <meta charset ="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
         <form>
-            <div>
+            <button class = "menu" id ="show-log">Log Workout</button>
+            <button class = "menu" id = "show-view">View Workout</button>
+            <button class = "menu" id = "show-delete">Delete Workouts</button>
+
+            <div class ="section hidden" id = "log-section">
                 <label for = "exercise">Exercise</label>
                 <input type="text" id = "exercise">
-            </div>
-            <div>
+
                 <label for = "weight">Weight</label>
                 <input type = "number" id = "weight">
-            </div>
-            <div>
+
                 <label for = "reps" >Reps</label>
                 <input type = "number" id = "reps">
+
+                <p type = "text" id = "message"></p>
+                <button id = "log-submit">Submit</button>
+                <button class = "back-button">Back</button>
             </div>
-            <button>Submit</button>
+            <div class = "section hidden" id = "view-section"></div>
+            <div class = "section hidden" id = "delete-section"></div>
         </form>
     </body>
 
