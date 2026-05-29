@@ -37,8 +37,19 @@ async function postWorkout(event) {
     }, 3000)
 }
 
-async function viewWorkout() {
-    
+// fetches all workouts and stores them in allWorkouts list for later access
+let allWorkouts = []
+async function getWorkouts(event) {
+    event.preventDefault()
+    const r = await fetch(url)
+
+    const result = await r.json()
+    if (Array.isArray(result)) {
+        allWorkouts = result
+    }
+    else {
+        console.log(result["message"])
+    }
 }
 
 function hideMenu() {
@@ -46,17 +57,33 @@ function hideMenu() {
 }
 
 function back() {
-    document.querySelectorAll(".section").forEach(btn => btn.classList.add("hiddent"))
+    document.querySelectorAll(".section").forEach(btn => btn.classList.add("hidden"))
     document.querySelectorAll(".menu").forEach(btn => btn.classList.remove("hidden"))
+    document.getElementById("back-button").classList.add("hidden")
 }
 
-
-
-document.getElementById("show-log").addEventListener("click", (event) => {
+// clicking "View Workouts" hides menu and shows muscle group selection
+document.getElementById("show-musclegroups").addEventListener("click", (event) => {
     event.preventDefault()
     hideMenu()
-    document.getElementById("log-section").classList.remove("hidden")
+    document.getElementById("musclegroups-section").classList.remove("hidden")
+    document.getElementById("back-button").classList.remove("hidden")
 })
-document.getElementById("back").addEventListener("click", back)
+
+
+// return to previous page
+document.getElementById("back-button").addEventListener("click", back)
+// submit new exercise
 document.getElementById("log-submit").addEventListener("click", postWorkout)
+// view back exercise
+document.getElementById("btn-back").addEventListener("click")
+// view chest exercise 
+document.getElementById("btn-chest").addEventListener("click")
+// view leg exercise
+document.getElementById("btn-legs").addEventListener("click")
+// view arms exercises
+document.getElementById("btn-arms").addEventListener("click")
+// view shoulder exercises
+document.getElementById("btn-shoulders").addEventListener("click")
+
 

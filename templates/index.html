@@ -8,9 +8,16 @@
     </head>
     <body>
         <form>
-            <button class = "menu" id ="show-log">Log Workout</button>
-            <button class = "menu" id = "show-view">View Workout</button>
-            <button class = "menu" id = "show-delete">Delete Workouts</button>
+
+            <button class = "menu" id ="show-musclegroups" type="button">View Workouts</button>
+
+            <div class = "section hidden" id = "musclegroups-section">
+                <button id = "btn-back" type="button">Back</button>
+                <button id = "btn-chest" type="button">Chest</button>
+                <button id = "btn-legs" type="button">Legs</button>
+                <button id = "btn-arms" type="button">Arms</button>
+                <button id = "btn-shoulders" type="button">Shoulders</button>
+            </div>
 
             <div class ="section hidden" id = "log-section">
                 <label for = "exercise">Exercise</label>
@@ -24,10 +31,8 @@
 
                 <p type = "text" id = "message"></p>
                 <button id = "log-submit">Submit</button>
-                <button class = "back-button">Back</button>
             </div>
-            <div class = "section hidden" id = "view-section"></div>
-            <div class = "section hidden" id = "delete-section"></div>
+            <button class = "hidden" id = "back-button" type="button">Return</button>
         </form>
     </body>
 

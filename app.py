@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.exc import IntegrityError
 
 app = Flask(__name__)
 
@@ -10,7 +11,8 @@ db = SQLAlchemy(app)
 # Model of each row of the database table
 class Workout(db.Model):
     id = db.Column(db.Integer, primary_key = True)
-    exercise = db.Column(db.String(50), nullable = False)
+    muscle_group = db.Column(db.String(50), nullable = False)
+    exercise = db.Column(db.String(50), nullable = False, unique=True)
     weight = db.Column(db.Float, nullable=False)
     reps = db.Column(db.Integer, nullable = False)
 # method to return the workout object dictionary to allow jsonify
@@ -45,7 +47,7 @@ def postWorkout():
     try: 
         # read json that will be sent in from javascript
         data = request.json
-        workout = Workout(exercise=data["exercise"],weight = data["weight"], reps = data["reps"])
+        workout = Workout(muscle_group = data["muscle_group"],exercise=data["exercise"],weight = data["weight"], reps = data["reps"])
         # add workout object to database table
         db.session.add(workout)
         db.session.commit()
@@ -53,6 +55,9 @@ def postWorkout():
         return jsonify({"message": "Workout added", "workout" : workout.to_dict()}), 201
     except KeyError:
         return jsonify({"error": "Missing required field"}), 400
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify ({"error" : "Exercise already exists"}), 409
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
