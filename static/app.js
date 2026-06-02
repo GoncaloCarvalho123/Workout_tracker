@@ -1,7 +1,5 @@
 const url = '/workout'
 
-
-
 async function postWorkout(event) {
     event.preventDefault()
     const exercise = document.getElementById("exercise").value
@@ -23,6 +21,7 @@ async function postWorkout(event) {
     const result = await r.json()
     if (r.ok) {
     document.getElementById("message").textContent = result["message"]
+    getWorkouts()   
     }
     else {
         document.getElementById("message").textContent = result["error"]
@@ -39,8 +38,8 @@ async function postWorkout(event) {
 
 // fetches all workouts and stores them in allWorkouts list for later access
 let allWorkouts = []
-async function getWorkouts(event) {
-    event.preventDefault()
+async function getWorkouts() {
+
     const r = await fetch(url)
 
     const result = await r.json()
@@ -52,14 +51,24 @@ async function getWorkouts(event) {
     }
 }
 
+function getMuscleGroupExercises(bodypart)
+{
+    let exercises = []
+    result = allWorkouts.filter(item => item.muscle_group == bodypart)
+    return result
+}
+
 function hideMenu() {
     document.querySelectorAll(".menu").forEach(btn => btn.classList.add("hidden"))
+}
+function hideMuscleGroupButtons() {
+    document.getElementById("musclegroups-section").classList.add("hidden")
 }
 
 function back() {
     document.querySelectorAll(".section").forEach(btn => btn.classList.add("hidden"))
     document.querySelectorAll(".menu").forEach(btn => btn.classList.remove("hidden"))
-    document.getElementById("back-button").classList.add("hidden")
+    document.getElementById("back-from-MuscleGroups").classList.add("hidden")
 }
 
 // clicking "View Workouts" hides menu and shows muscle group selection
@@ -67,16 +76,22 @@ document.getElementById("show-musclegroups").addEventListener("click", (event) =
     event.preventDefault()
     hideMenu()
     document.getElementById("musclegroups-section").classList.remove("hidden")
-    document.getElementById("back-button").classList.remove("hidden")
+    document.getElementById("back-from-MuscleGroups").classList.remove("hidden")
 })
 
-
 // return to previous page
-document.getElementById("back-button").addEventListener("click", back)
+document.getElementById("back-from-MuscleGroups").addEventListener("click", back)
 // submit new exercise
 document.getElementById("log-submit").addEventListener("click", postWorkout)
+
+
 // view back exercise
-document.getElementById("btn-back").addEventListener("click")
+document.getElementById("btn-back").addEventListener("click", (event) =>{
+    hideMuscleGroupButtons()
+    exercises = getMuscleGroupExercises("back")
+    
+
+})
 // view chest exercise 
 document.getElementById("btn-chest").addEventListener("click")
 // view leg exercise
@@ -87,3 +102,5 @@ document.getElementById("btn-arms").addEventListener("click")
 document.getElementById("btn-shoulders").addEventListener("click")
 
 
+
+getWorkouts()

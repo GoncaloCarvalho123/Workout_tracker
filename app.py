@@ -17,7 +17,8 @@ class Workout(db.Model):
     reps = db.Column(db.Integer, nullable = False)
 # method to return the workout object dictionary to allow jsonify
     def to_dict(self):
-        return {"exercise": self.exercise,
+        return {"muscle_group" : self.muscle_group,
+                "exercise": self.exercise,
                 "weight": self.weight,
                 "reps": self.reps}
 
