@@ -1,12 +1,28 @@
-const url = '/workout'
+// ========================================   DATA   ===================================================
 
+const url = '/workout'
+let allWorkouts = []
+let currentMuscleGroup = ""
+
+function getMuscleGroupExercises(bodypart)
+{
+    let exercises = []
+    result = allWorkouts.filter(item => item.muscle_group == bodypart)
+    return result
+}
+
+// ======================= API CALLS ============================
+
+// sends a new workout to POST api
 async function postWorkout(event) {
     event.preventDefault()
-    const exercise = document.getElementById("exercise").value
+    const muscle_group = currentMuscleGroup
+    const exercise_name = document.getElementById("exercise_name").value
     const weight = document.getElementById("weight").value
     const reps = document.getElementById("reps").value
 
-    data = {"exercise" : exercise,
+    data = {"muscle_group" : muscle_group,
+        "exercise_name" : exercise_name,
     "weight" : weight,
     "reps" : reps
     }
@@ -27,17 +43,17 @@ async function postWorkout(event) {
         document.getElementById("message").textContent = result["error"]
     }
 
-    document.getElementById("exercise").value = ""
+    document.getElementById("exercise_name").value = ""
     document.getElementById("weight").value = ""
     document.getElementById("reps").value = ""
 
-    setTimeout (() => {
-        document.getElementById("message").textContent = ""
-    }, 3000)
+    setTimeout(() => {
+        document.getElementById("message").textContent = ""}, 2000
+    )
+
 }
 
-// fetches all workouts and stores them in allWorkouts list for later access
-let allWorkouts = []
+// fetches all workouts and stores them for later access
 async function getWorkouts() {
 
     const r = await fetch(url)
@@ -51,55 +67,109 @@ async function getWorkouts() {
     }
 }
 
-function getMuscleGroupExercises(bodypart)
-{
-    let exercises = []
-    result = allWorkouts.filter(item => item.muscle_group == bodypart)
-    return result
-}
+
+// ======================= UI HELPERS ======================
 
 function hideMenu() {
     document.querySelectorAll(".menu").forEach(btn => btn.classList.add("hidden"))
 }
+
 function hideMuscleGroupButtons() {
-    document.getElementById("musclegroups-section").classList.add("hidden")
+    document.getElementById("musclegroups-list").classList.add("hidden")
 }
 
-function back() {
+function populateExerciseList(exercises) {
+    const ul = document.getElementById("exercise-list")
+    ul.innerHTML = ""
+
+    exercises.forEach(exercise => {
+        const li = document.createElement("li")
+        li.textContent = exercise.exercise_name
+        li.dataset.id = exercise.id
+        // =======================================================================   Continue =============================================
+        li.addEventListener("click", () => {
+
+        })
+        // =================================================================================================================================
+        ul.appendChild(li)
+    })
+}
+function hideExerciseList() {
+    document.getElementById("exercises-section").classList.add("hidden")
+}
+
+
+
+// ======================= NAVIGATION ========================
+
+function returnToMenu() {
     document.querySelectorAll(".section").forEach(btn => btn.classList.add("hidden"))
     document.querySelectorAll(".menu").forEach(btn => btn.classList.remove("hidden"))
-    document.getElementById("back-from-MuscleGroups").classList.add("hidden")
 }
+
+function returnToMuscleGroups() {
+    document.getElementById("musclegroups-list").classList.remove("hidden")
+    document.getElementById("exercises-section").classList.add("hidden")
+}
+
+function showExercises(bodypart) {
+    currentMuscleGroup = bodypart
+    hideMuscleGroupButtons()
+    exercises = getMuscleGroupExercises(bodypart)
+    populateExerciseList(exercises)
+    document.getElementById("exercises-section").classList.remove("hidden")
+}
+function returnToExerciseList() {
+    document.getElementById("log-section").classList.add("hidden")
+    showExercises(currentMuscleGroup)
+}
+
+
+
+// ================= EVENT LISTENERS =====================
 
 // clicking "View Workouts" hides menu and shows muscle group selection
 document.getElementById("show-musclegroups").addEventListener("click", (event) => {
     event.preventDefault()
     hideMenu()
-    document.getElementById("musclegroups-section").classList.remove("hidden")
-    document.getElementById("back-from-MuscleGroups").classList.remove("hidden")
+    document.getElementById("musclegroups-list").classList.remove("hidden")
 })
 
 // return to previous page
-document.getElementById("back-from-MuscleGroups").addEventListener("click", back)
+document.getElementById("return-from-MuscleGroups").addEventListener("click", returnToMenu)
+document.getElementById("return-from-exercises").addEventListener("click", returnToMuscleGroups)
+document.getElementById("return-from-log").addEventListener("click",returnToExerciseList )
+
 // submit new exercise
 document.getElementById("log-submit").addEventListener("click", postWorkout)
 
-
-// view back exercise
-document.getElementById("btn-back").addEventListener("click", (event) =>{
-    hideMuscleGroupButtons()
-    exercises = getMuscleGroupExercises("back")
-    
-
+// add new exercise to list
+document.getElementById("add").addEventListener("click", () => {
+    hideExerciseList()
+    document.getElementById("log-section").classList.remove("hidden")
 })
-// view chest exercise 
-document.getElementById("btn-chest").addEventListener("click")
-// view leg exercise
-document.getElementById("btn-legs").addEventListener("click")
-// view arms exercises
-document.getElementById("btn-arms").addEventListener("click")
-// view shoulder exercises
-document.getElementById("btn-shoulders").addEventListener("click")
+
+
+// buttons to view corresponding exercises
+document.getElementById("btn-back").addEventListener("click", () =>{
+    showExercises("back")
+})
+
+document.getElementById("btn-chest").addEventListener("click", () =>{
+    showExercises("chest")
+})
+
+document.getElementById("btn-legs").addEventListener("click", () =>{
+    showExercises("legs")
+})
+
+document.getElementById("btn-arms").addEventListener("click", () =>{
+    showExercises("arms")
+})
+
+document.getElementById("btn-shoulders").addEventListener("click", () =>{
+    showExercises("shoulders")
+})
 
 
 

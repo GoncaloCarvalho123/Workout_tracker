@@ -1,44 +1,52 @@
 <!DOCTYPE HTML>
-    <html>
-    <head>
-        <script src ="/static/app.js" defer></script>
-        <link rel="stylesheet" href ="/static/style.css">
-        <meta charset ="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body>
-        <form>
+<html>
+<head>
+    <script src="/static/app.js" defer></script>
+    <link rel="stylesheet" href="/static/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <form>
 
-            <button class = "menu" id ="show-musclegroups" type="button">View Workouts</button>
+        <!-- ===== MAIN MENU ===== -->
+        <button class="menu" id="show-musclegroups" type="button">View Workouts</button>
 
-            <div class = "section hidden" id = "musclegroups-section">
-                <button id = "btn-back" type="button">Back</button>
-                <button id = "btn-chest" type="button">Chest</button>
-                <button id = "btn-legs" type="button">Legs</button>
-                <button id = "btn-arms" type="button">Arms</button>
-                <button id = "btn-shoulders" type="button">Shoulders</button>
-            </div>
+        <!-- ===== MUSCLE GROUPS ===== -->
+        <div class="section hidden" id="musclegroups-list">
+            <button id="btn-back" type="button">Back</button>
+            <button id="btn-chest" type="button">Chest</button>
+            <button id="btn-legs" type="button">Legs</button>
+            <button id="btn-arms" type="button">Arms</button>
+            <button id="btn-shoulders" type="button">Shoulders</button>
 
-            <div class ="section hidden" id = "exercise-section">
-                <ul id = "exercise-list"></ul>
-                <button id = "back-from-exercises" type = "button">Back</button>
-            </div>
+            <button id="return-from-MuscleGroups" type="button">Return</button>
+        </div>
 
-            <div class ="section hidden" id = "log-section">
-                <label for = "exercise">Exercise</label>
-                <input type="text" id = "exercise">
+        <!-- ===== EXERCISE LIST ===== -->
+        <div class="section hidden" id="exercises-section">
+            <ul id="exercise-list"></ul>
+            <button id="return-from-exercises" type="button">Return</button>
+            <button id = "add" type = "button"> Add New</button>
+        </div>
 
-                <label for = "weight">Weight</label>
-                <input type = "number" id = "weight">
+        <!-- ===== LOG WORKOUT ===== -->
+        <div class="section hidden" id="log-section">
+            <label for="exercise">Exercise</label>
+            <input type="text" id="exercise_name">
 
-                <label for = "reps" >Reps</label>
-                <input type = "number" id = "reps">
+            <label for="weight">Weight</label>
+            <input type="number" id="weight">
 
-                <p type = "text" id = "message"></p>
-                <button id = "log-submit">Submit</button>
-            </div>
-            <button class = "hidden" id = "back-from-MuscleGroups" type="button">Return</button>
-        </form>
-    </body>
+            <label for="reps">Reps</label>
+            <input type="number" id="reps">
 
-    </html>
+            <p id="message"></p>
+            <button id="log-submit">Submit</button>
+            <button id ="return-from-log" type ="button">return</button>
+        </div>
+
+
+    </form>
+</body>
+</html>
