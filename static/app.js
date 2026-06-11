@@ -1,8 +1,15 @@
+// TODO: restructure postWorkout() function to take a workout object to allow different buttons to log workouts by simply creating an object with all attributes and passing it to postWorkout.
+//       At the moment, postWorkout handles the log-submit button specifically by reading specific input boxes from that page
+//       Once this is done, update the confirm-submit button to post a workout.
+
+
+
 // ========================================   DATA   ===================================================
 
 const url = '/workout'
 let allWorkouts = []
 let currentMuscleGroup = ""
+let currentExercise = null
 
 function getMuscleGroupExercises(bodypart)
 {
@@ -86,11 +93,16 @@ function populateExerciseList(exercises) {
         const li = document.createElement("li")
         li.textContent = exercise.exercise_name
         li.dataset.id = exercise.id
-        // =======================================================================   Continue =============================================
+        
         li.addEventListener("click", () => {
-
+            currentExercise = exercise
+            document.querySelectorAll(".section").forEach(section => section.classList.add("hidden"))
+            document.getElementById("exercise-details").classList.remove("hidden")
+            document.getElementById("exercise-name").textContent = exercise.exercise_name
+            document.getElementById("current-weight").textContent = `Weight: ${exercise.weight} lbs`
+            document.getElementById("current-reps").textContent = `Reps: ${exercise.reps}`
         })
-        // =================================================================================================================================
+        
         ul.appendChild(li)
     })
 }
@@ -120,7 +132,7 @@ function showExercises(bodypart) {
     document.getElementById("exercises-section").classList.remove("hidden")
 }
 function returnToExerciseList() {
-    document.getElementById("log-section").classList.add("hidden")
+    document.querySelectorAll(".section").forEach(section => section.classList.add("hidden"))
     showExercises(currentMuscleGroup)
 }
 
@@ -128,48 +140,43 @@ function returnToExerciseList() {
 
 // ================= EVENT LISTENERS =====================
 
-// clicking "View Workouts" hides menu and shows muscle group selection
+// --- Main Menu ---
 document.getElementById("show-musclegroups").addEventListener("click", (event) => {
     event.preventDefault()
     hideMenu()
     document.getElementById("musclegroups-list").classList.remove("hidden")
 })
 
-// return to previous page
+// --- Muscle Groups ---
 document.getElementById("return-from-MuscleGroups").addEventListener("click", returnToMenu)
+document.getElementById("btn-back").addEventListener("click", () => showExercises("back"))
+document.getElementById("btn-chest").addEventListener("click", () => showExercises("chest"))
+document.getElementById("btn-legs").addEventListener("click", () => showExercises("legs"))
+document.getElementById("btn-arms").addEventListener("click", () => showExercises("arms"))
+document.getElementById("btn-shoulders").addEventListener("click", () => showExercises("shoulders"))
+
+// --- Exercise List ---
 document.getElementById("return-from-exercises").addEventListener("click", returnToMuscleGroups)
-document.getElementById("return-from-log").addEventListener("click",returnToExerciseList )
-
-// submit new exercise
-document.getElementById("log-submit").addEventListener("click", postWorkout)
-
-// add new exercise to list
 document.getElementById("add").addEventListener("click", () => {
     hideExerciseList()
     document.getElementById("log-section").classList.remove("hidden")
 })
 
-
-// buttons to view corresponding exercises
-document.getElementById("btn-back").addEventListener("click", () =>{
-    showExercises("back")
+// --- Exercise Details ---
+document.getElementById("update-button").addEventListener("click", () => {
+    document.getElementById("update-exercise").classList.remove("hidden")
+})
+document.getElementById("return-from-exercise-details").addEventListener("click", returnToExerciseList)
+document.getElementById("confirm-update").addEventListener("click", () => {
+    const exercise_name = currentExercise.exercise_name
+    const muscle_group = currentExercise.muscle_group
+    const weight = currentExercise.weight
+    const reps = currentExercise.reps
 })
 
-document.getElementById("btn-chest").addEventListener("click", () =>{
-    showExercises("chest")
-})
-
-document.getElementById("btn-legs").addEventListener("click", () =>{
-    showExercises("legs")
-})
-
-document.getElementById("btn-arms").addEventListener("click", () =>{
-    showExercises("arms")
-})
-
-document.getElementById("btn-shoulders").addEventListener("click", () =>{
-    showExercises("shoulders")
-})
+// --- Log Workout ---
+document.getElementById("log-submit").addEventListener("click", postWorkout)
+document.getElementById("return-from-log").addEventListener("click", returnToExerciseList)
 
 
 
