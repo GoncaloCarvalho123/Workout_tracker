@@ -1,8 +1,7 @@
-// TODO: restructure postWorkout() function to take a workout object to allow different buttons to log workouts by simply creating an object with all attributes and passing it to postWorkout.
-//       At the moment, postWorkout handles the log-submit button specifically by reading specific input boxes from that page
-//       Once this is done, update the confirm-submit button to post a workout.
-
-
+// TODO: Fix update logic. Update needs to add a new workout to database table. Change logic for database workout table and GET method. Create new GET method to return history. 
+//          Solution: Workout table currently stores only unique workouts. Change structure to store all workouts with their updates with their time. 
+//                      /Workout GET api will return a list of only the most recent of each exercise
+//                      Create another GET api that will return the entire history
 
 // ========================================   DATA   ===================================================
 
@@ -21,41 +20,28 @@ function getMuscleGroupExercises(bodypart)
 // ======================= API CALLS ============================
 
 // sends a new workout to POST api
-async function postWorkout(event) {
+async function postWorkout(event, workout, message) {
     event.preventDefault()
-    const muscle_group = currentMuscleGroup
-    const exercise_name = document.getElementById("exercise_name").value
-    const weight = document.getElementById("weight").value
-    const reps = document.getElementById("reps").value
-
-    data = {"muscle_group" : muscle_group,
-        "exercise_name" : exercise_name,
-    "weight" : weight,
-    "reps" : reps
-    }
 
     const r = await fetch(url, {
     method: "POST",
     headers: { 'Content-Type': 'application/json'},
-    body: JSON.stringify(data)
+    body: JSON.stringify(workout)
     }
     )
 
     const result = await r.json()
     if (r.ok) {
-    document.getElementById("message").textContent = result["message"]
+    document.getElementById(message).textContent = result["message"]
     getWorkouts()   
     }
     else {
-        document.getElementById("message").textContent = result["error"]
+        document.getElementById(message).textContent = result["error"]
     }
 
-    document.getElementById("exercise_name").value = ""
-    document.getElementById("weight").value = ""
-    document.getElementById("reps").value = ""
 
     setTimeout(() => {
-        document.getElementById("message").textContent = ""}, 2000
+        document.getElementById(message).textContent = ""}, 2000
     )
 
 }
@@ -165,17 +151,39 @@ document.getElementById("add").addEventListener("click", () => {
 // --- Exercise Details ---
 document.getElementById("update-button").addEventListener("click", () => {
     document.getElementById("update-exercise").classList.remove("hidden")
+
 })
 document.getElementById("return-from-exercise-details").addEventListener("click", returnToExerciseList)
-document.getElementById("confirm-update").addEventListener("click", () => {
-    const exercise_name = currentExercise.exercise_name
-    const muscle_group = currentExercise.muscle_group
-    const weight = currentExercise.weight
-    const reps = currentExercise.reps
+document.getElementById("confirm-update").addEventListener("click", (event) => {
+    const workout = {
+    exercise_name: currentExercise.exercise_name,
+    muscle_group:  currentExercise.muscle_group,
+    weight: document.getElementById("new-weight").value,
+    reps: document.getElementById("new-reps").value
+    }
+    
+    postWorkout(event,workout, "update-message")
+
+    document.getElementById("new-weight").value=""
+    document.getElementById("new-reps").value=""
 })
 
 // --- Log Workout ---
-document.getElementById("log-submit").addEventListener("click", postWorkout)
+document.getElementById("log-submit").addEventListener("click", (event) => {
+    const workout = {
+        exercise_name: document.getElementById("exercise_name").value,
+        muscle_group: currentMuscleGroup,
+        weight: document.getElementById("weight").value,
+        reps: document.getElementById("reps").value
+    }
+
+    postWorkout(event,workout, "log-message")
+
+    document.getElementById("exercise_name").value = ""
+    document.getElementById("weight").value = ""
+    document.getElementById("reps").value = ""
+}
+)
 document.getElementById("return-from-log").addEventListener("click", returnToExerciseList)
 
 

@@ -44,6 +44,9 @@ def getWorkout():
         return jsonify({"message": "No workouts have been logged"}), 200
     return jsonify([w.to_dict() for w in workouts_list]), 200
 
+
+
+
 @app.route('/workout', methods=['POST'])
 def postWorkout():
     try:
@@ -71,6 +74,10 @@ def postWorkout():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+
+
+
 @app.route('/workout/<int:id>', methods=['DELETE'])
 def delete_workout(id):
     try:
@@ -82,6 +89,10 @@ def delete_workout(id):
         return jsonify({"message": "workout was successfully deleted"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
+
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5555, debug=True)
