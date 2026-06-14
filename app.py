@@ -2,20 +2,24 @@ from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
 from dotenv import load_dotenv
+from datetime import datetime
+from flask_migrate import Migrate
 import os
+
 load_dotenv()
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 db = SQLAlchemy(app)
-
+migrate = Migrate(app, db)
 
 # =============== MODELS ===============
 
 class Workout(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.DateTime, default=datetime.utcnow)
     muscle_group = db.Column(db.String(50), nullable=False)
-    exercise_name = db.Column(db.String(50), nullable=False, unique=True)
+    exercise_name = db.Column(db.String(50), nullable=False)
     weight = db.Column(db.Float, nullable=False)
     reps = db.Column(db.Integer, nullable=False)
 
@@ -24,7 +28,7 @@ class Workout(db.Model):
             "muscle_group": self.muscle_group,
             "exercise_name": self.exercise_name,
             "weight": self.weight,
-            "reps": self.reps
+            "reps": self.reps,
         }
 
 with app.app_context():
@@ -39,9 +43,20 @@ def index():
 
 @app.route('/workout', methods=['GET'])
 def getWorkout():
+    latest_workouts = {}
+    for workout in Workout.query.all():
+        if workout.exercise_name not in latest_workouts:
+            latest_workouts[workout.exercise_name] = workout
+        elif workout.exercise_name in latest_workouts:
+            if workout.date > latest_workouts[workout.exercise_name].date:
+                latest_workouts[workout.exercise_name] = workout
+    return jsonify([w.to_dict() for w in latest_workouts.values()])
+
+
+
+@app.route('/workout/history', methods=['GET'])
+def getWorkoutHistory():
     workouts_list = Workout.query.all()
-    if not workouts_list:
-        return jsonify({"message": "No workouts have been logged"}), 200
     return jsonify([w.to_dict() for w in workouts_list]), 200
 
 
@@ -68,9 +83,6 @@ def postWorkout():
         return jsonify({"message": "Workout added", "workout": workout.to_dict()}), 201
     except KeyError:
         return jsonify({"error": "Missing required field"}), 400
-    except IntegrityError:
-        db.session.rollback()
-        return jsonify({"error": "Exercise already exists"}), 409
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

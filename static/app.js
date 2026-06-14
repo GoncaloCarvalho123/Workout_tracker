@@ -5,7 +5,6 @@
 
 // ========================================   DATA   ===================================================
 
-const url = '/workout'
 let allWorkouts = []
 let currentMuscleGroup = ""
 let currentExercise = null
@@ -23,7 +22,7 @@ function getMuscleGroupExercises(bodypart)
 async function postWorkout(event, workout, message) {
     event.preventDefault()
 
-    const r = await fetch(url, {
+    const r = await fetch('/workout', {
     method: "POST",
     headers: { 'Content-Type': 'application/json'},
     body: JSON.stringify(workout)
@@ -46,10 +45,10 @@ async function postWorkout(event, workout, message) {
 
 }
 
-// fetches all workouts and stores them for later access
+// fetches most recent workouts and stores them for later access
 async function getWorkouts() {
 
-    const r = await fetch(url)
+    const r = await fetch('/workout')
 
     const result = await r.json()
     if (Array.isArray(result)) {
@@ -151,7 +150,6 @@ document.getElementById("add").addEventListener("click", () => {
 // --- Exercise Details ---
 document.getElementById("update-button").addEventListener("click", () => {
     document.getElementById("update-exercise").classList.remove("hidden")
-
 })
 document.getElementById("return-from-exercise-details").addEventListener("click", returnToExerciseList)
 document.getElementById("confirm-update").addEventListener("click", (event) => {
@@ -164,6 +162,8 @@ document.getElementById("confirm-update").addEventListener("click", (event) => {
     
     postWorkout(event,workout, "update-message")
 
+    document.getElementById("current-weight").textContent = `Weight: ${document.getElementById("new-weight").value} lbs`
+    document.getElementById("current-reps").textContent = `Reps: ${document.getElementById("new-reps").value}`
     document.getElementById("new-weight").value=""
     document.getElementById("new-reps").value=""
 })
@@ -182,10 +182,10 @@ document.getElementById("log-submit").addEventListener("click", (event) => {
     document.getElementById("exercise_name").value = ""
     document.getElementById("weight").value = ""
     document.getElementById("reps").value = ""
+    
 }
 )
 document.getElementById("return-from-log").addEventListener("click", returnToExerciseList)
-
 
 
 getWorkouts()
