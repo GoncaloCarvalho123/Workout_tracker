@@ -29,6 +29,7 @@ class Workout(db.Model):
             "exercise_name": self.exercise_name,
             "weight": self.weight,
             "reps": self.reps,
+            "date":self.date.isoformat() if self.date else None
         }
 
 with app.app_context():

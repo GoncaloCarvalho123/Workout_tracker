@@ -1,11 +1,10 @@
-// TODO: Fix update logic. Update needs to add a new workout to database table. Change logic for database workout table and GET method. Create new GET method to return history. 
-//          Solution: Workout table currently stores only unique workouts. Change structure to store all workouts with their updates with their time. 
-//                      /Workout GET api will return a list of only the most recent of each exercise
-//                      Create another GET api that will return the entire history
+// TODO: add history display logic
+//      Solution: fetch GET /workout/history to store all workouts to display corresponding updates with their dateTime 
 
 // ========================================   DATA   ===================================================
 
 let allWorkouts = []
+let allHistory = []
 let currentMuscleGroup = ""
 let currentExercise = null
 
@@ -15,6 +14,12 @@ function getMuscleGroupExercises(bodypart)
     result = allWorkouts.filter(item => item.muscle_group == bodypart)
     return result
 }
+function getExerciseHistory(exercise_name) {
+    let exerciseHistory = []
+    result = allHistory.filter(item => item.exercise_name == exercise_name)
+    return result
+}
+
 
 // ======================= API CALLS ============================
 
@@ -33,6 +38,7 @@ async function postWorkout(event, workout, message) {
     if (r.ok) {
     document.getElementById(message).textContent = result["message"]
     getWorkouts()   
+    getHistory()
     }
     else {
         document.getElementById(message).textContent = result["error"]
@@ -57,6 +63,20 @@ async function getWorkouts() {
     else {
         console.log(result["message"])
     }
+}
+
+async function getHistory() {
+
+    const r = await fetch('/workout/history')
+
+    const result = await r.json()
+    if (Array.isArray(result)) {
+        allHistory = result
+    }
+    else {
+        console.log(result["message"])
+    }
+
 }
 
 
@@ -97,6 +117,8 @@ function hideExerciseList() {
 
 
 
+
+
 // ======================= NAVIGATION ========================
 
 function returnToMenu() {
@@ -116,6 +138,31 @@ function showExercises(bodypart) {
     populateExerciseList(exercises)
     document.getElementById("exercises-section").classList.remove("hidden")
 }
+
+function showHistory(exercise_name) {
+    result = getExerciseHistory(exercise_name)
+
+    document.querySelectorAll(".section").forEach(button => button.classList.add("hidden"))
+    document.getElementById("history-section").classList.remove("hidden")
+    
+    const ul = document.getElementById("history-list")
+    ul.innerHTML = ""
+
+    document.getElementById("history-exercise-name").textContent = currentExercise.exercise_name
+    result.forEach(exercise => {
+        const date = new Date(exercise.date)
+        const month = date.toLocaleString('default', { month: 'short' })
+        const day = date.getDate()
+        const li = document.createElement("li")
+        li.textContent = ` ${month} ${day} - ${exercise.weight} lbs x ${exercise.reps} reps`
+        console.log(exercise.date)
+
+        ul.appendChild(li)
+    })
+
+}
+
+
 function returnToExerciseList() {
     document.querySelectorAll(".section").forEach(section => section.classList.add("hidden"))
     showExercises(currentMuscleGroup)
@@ -148,10 +195,18 @@ document.getElementById("add").addEventListener("click", () => {
 })
 
 // --- Exercise Details ---
+document.getElementById("history").addEventListener("click",() => {
+    showHistory(currentExercise.exercise_name)
+})
+
+document.getElementById("return-from-history").addEventListener("click", returnToExerciseList)
+
 document.getElementById("update-button").addEventListener("click", () => {
     document.getElementById("update-exercise").classList.remove("hidden")
 })
+
 document.getElementById("return-from-exercise-details").addEventListener("click", returnToExerciseList)
+
 document.getElementById("confirm-update").addEventListener("click", (event) => {
     const workout = {
     exercise_name: currentExercise.exercise_name,
@@ -189,3 +244,4 @@ document.getElementById("return-from-log").addEventListener("click", returnToExe
 
 
 getWorkouts()
+getHistory()
