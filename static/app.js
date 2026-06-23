@@ -1,5 +1,5 @@
 // TODO: add history display logic
-//      Solution: fetch GET /workout/history to store all workouts to display corresponding updates with their dateTime 
+//      Solution: fetch GET /workout/history to store all workouts to display corresponding updates with their dateTime
 
 // ========================================   DATA   ===================================================
 
@@ -8,23 +8,16 @@ let allHistory = []
 let currentMuscleGroup = ""
 let currentExercise = null
 
-function getMuscleGroupExercises(bodypart)
-{
-    let exercises = []
-    result = allWorkouts.filter(item => item.muscle_group == bodypart)
-    return result
+async function fetchJSON(url, options = {}) {
+    const response = await fetch(url, options)
+    return response.json()
 }
-function getExerciseHistory(exercise_name) {
-    let exerciseHistory = []
-    result = allHistory.filter(item => item.exercise_name == exercise_name)
-    return result
-}
-
 
 // ======================= API CALLS ============================
 
 // sends a new workout to POST api
 async function postWorkout(event, workout, message) {
+
     event.preventDefault()
 
     const r = await fetch('/workout', {
@@ -48,7 +41,6 @@ async function postWorkout(event, workout, message) {
     setTimeout(() => {
         document.getElementById(message).textContent = ""}, 2000
     )
-
 }
 
 // fetches most recent workouts and stores them for later access
@@ -134,13 +126,13 @@ function returnToMuscleGroups() {
 function showExercises(bodypart) {
     currentMuscleGroup = bodypart
     hideMuscleGroupButtons()
-    exercises = getMuscleGroupExercises(bodypart)
+    const exercises = allWorkouts.filter(item => item.muscle_group == bodypart)
     populateExerciseList(exercises)
     document.getElementById("exercises-section").classList.remove("hidden")
 }
 
 function showHistory(exercise_name) {
-    result = getExerciseHistory(exercise_name)
+    const result = allHistory.filter(item => item.exercise_name == exercise_name)
 
     document.querySelectorAll(".section").forEach(button => button.classList.add("hidden"))
     document.getElementById("history-section").classList.remove("hidden")
@@ -207,24 +199,26 @@ document.getElementById("update-button").addEventListener("click", () => {
 
 document.getElementById("return-from-exercise-details").addEventListener("click", returnToExerciseList)
 
-document.getElementById("confirm-update").addEventListener("click", (event) => {
+document.getElementById("confirm-update").addEventListener("click", async (event) => {
     const workout = {
     exercise_name: currentExercise.exercise_name,
     muscle_group:  currentExercise.muscle_group,
-    weight: document.getElementById("new-weight").value,
-    reps: document.getElementById("new-reps").value
+    weight: Number(document.getElementById("new-weight").value),
+    reps: Number(document.getElementById("new-reps").value)
     }
     
-    postWorkout(event,workout, "update-message")
+    await postWorkout(event,workout, "update-message")
+    currentExercise = workout
 
     document.getElementById("current-weight").textContent = `Weight: ${document.getElementById("new-weight").value} lbs`
     document.getElementById("current-reps").textContent = `Reps: ${document.getElementById("new-reps").value}`
     document.getElementById("new-weight").value=""
     document.getElementById("new-reps").value=""
+    document.getElementById("update-exercise").classList.add("hidden")
 })
 
 // --- Log Workout ---
-document.getElementById("log-submit").addEventListener("click", (event) => {
+document.getElementById("log-submit").addEventListener("click", async (event) => {
     const workout = {
         exercise_name: document.getElementById("exercise_name").value,
         muscle_group: currentMuscleGroup,
@@ -232,7 +226,7 @@ document.getElementById("log-submit").addEventListener("click", (event) => {
         reps: document.getElementById("reps").value
     }
 
-    postWorkout(event,workout, "log-message")
+    await postWorkout(event,workout, "log-message")
 
     document.getElementById("exercise_name").value = ""
     document.getElementById("weight").value = ""

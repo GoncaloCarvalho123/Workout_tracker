@@ -25,6 +25,7 @@ class Workout(db.Model):
 
     def to_dict(self):
         return {
+            "id": self.id,
             "muscle_group": self.muscle_group,
             "exercise_name": self.exercise_name,
             "weight": self.weight,
@@ -57,7 +58,7 @@ def getWorkout():
 
 @app.route('/workout/history', methods=['GET'])
 def getWorkoutHistory():
-    workouts_list = Workout.query.all()
+    workouts_list = Workout.query.order_by(Workout.date.desc()).all()
     return jsonify([w.to_dict() for w in workouts_list]), 200
 
 
