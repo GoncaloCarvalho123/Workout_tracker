@@ -22,7 +22,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build and push Docker Image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with: 
           push: true
           tags:  375740441275.dkr.ecr.us-east-1.amazonaws.com/workout-tracker:latest
