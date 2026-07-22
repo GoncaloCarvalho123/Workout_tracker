@@ -4,6 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from dotenv import load_dotenv
 from datetime import datetime
 from flask_migrate import Migrate
+from prometheus_flask_exporter import PrometheusMetrics
 import os
 
 load_dotenv()
@@ -12,6 +13,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+metrics = PrometheusMetrics(app)
 
 # =============== MODELS ===============
 
@@ -109,4 +111,4 @@ def delete_workout(id):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5555, debug=True)
+    app.run(host='0.0.0.0', port=5555, debug=False)
