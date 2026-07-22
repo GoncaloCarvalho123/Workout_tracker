@@ -43,7 +43,9 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: | 
-            aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin 375740441275.dkr.ecr.us-east-1.amazonaws.com
+            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 375740441275.dkr.ecr.us-east-1.amazonaws.com
             cd Workout_tracker
-            sudo docker compose down
-            sudo docker compose up -d --pull always
+            docker compose down
+            docker image prune -af
+            docker volume prune -f
+            docker compose up -d --pull always
