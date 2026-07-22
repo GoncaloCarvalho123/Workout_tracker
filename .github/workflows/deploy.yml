@@ -27,6 +27,15 @@ jobs:
           push: true
           tags:  375740441275.dkr.ecr.us-east-1.amazonaws.com/workout-tracker:latest
 
+      - name: Copy compose files to EC2
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.yml,prometheus.yml"
+          target: "~/Workout_tracker"
+
       - name: SSH into EC2 and deploy
         uses: appleboy/ssh-action@v0.1.10
         with:
