@@ -3,15 +3,10 @@
 
 // ========================================   DATA   ===================================================
 
-let allWorkouts = []
-let allHistory = []
+
 let currentMuscleGroup = ""
 let currentExercise = null
 
-async function fetchJSON(url, options = {}) {
-    const response = await fetch(url, options)
-    return response.json()
-}
 
 // ======================= API CALLS ============================
 
@@ -30,8 +25,6 @@ async function postWorkout(event, workout, message) {
     const result = await r.json()
     if (r.ok) {
     document.getElementById(message).textContent = result["message"]
-    getWorkouts()   
-    getHistory()
     }
     else {
         document.getElementById(message).textContent = result["error"]
@@ -43,34 +36,41 @@ async function postWorkout(event, workout, message) {
     )
 }
 
-// fetches most recent workouts and stores them for later access
-async function getWorkouts() {
 
-    const r = await fetch('/workout')
 
-    const result = await r.json()
-    if (Array.isArray(result)) {
-        allWorkouts = result
+async function handleLogSubmit() {
+        const workout = {
+        exercise_name: document.getElementById("exercise_name").value,
+        muscle_group: currentMuscleGroup,
+        weight: document.getElementById("weight").value,
+        reps: document.getElementById("reps").value
     }
-    else {
-        console.log(result["message"])
-    }
+
+    await postWorkout(event,workout, "log-message")
+
+    document.getElementById("exercise_name").value = ""
+    document.getElementById("weight").value = ""
+    document.getElementById("reps").value = ""
+    
 }
 
-async function getHistory() {
-
-    const r = await fetch('/workout/history')
-
-    const result = await r.json()
-    if (Array.isArray(result)) {
-        allHistory = result
+async function handleConfirmUpdate() {
+    const workout = {
+    exercise_name: currentExercise.exercise_name,
+    muscle_group:  currentExercise.muscle_group,
+    weight: Number(document.getElementById("new-weight").value),
+    reps: Number(document.getElementById("new-reps").value)
     }
-    else {
-        console.log(result["message"])
-    }
+    
+    await postWorkout(event,workout, "update-message")
+    currentExercise = workout
 
+    document.getElementById("current-weight").textContent = `Weight: ${document.getElementById("new-weight").value} lbs`
+    document.getElementById("current-reps").textContent = `Reps: ${document.getElementById("new-reps").value}`
+    document.getElementById("new-weight").value=""
+    document.getElementById("new-reps").value=""
+    document.getElementById("update-exercise").classList.add("hidden")
 }
-
 
 // ======================= UI HELPERS ======================
 
@@ -108,9 +108,6 @@ function hideExerciseList() {
 }
 
 
-
-
-
 // ======================= NAVIGATION ========================
 
 function returnToMenu() {
@@ -123,16 +120,19 @@ function returnToMuscleGroups() {
     document.getElementById("exercises-section").classList.add("hidden")
 }
 
-function showExercises(bodypart) {
+async function showExercises(bodypart) {
     currentMuscleGroup = bodypart
     hideMuscleGroupButtons()
-    const exercises = allWorkouts.filter(item => item.muscle_group == bodypart)
+    const r = await fetch(`/workout?muscle_group=${bodypart}`)
+
+    const exercises = await r.json()
     populateExerciseList(exercises)
     document.getElementById("exercises-section").classList.remove("hidden")
 }
 
-function showHistory(exercise_name) {
-    const result = allHistory.filter(item => item.exercise_name == exercise_name)
+async function showHistory(exercise_name) {
+    const r = await fetch(`/workout/history?exercise_name=${exercise_name}`)
+    const exercises = await r.json()
 
     document.querySelectorAll(".section").forEach(button => button.classList.add("hidden"))
     document.getElementById("history-section").classList.remove("hidden")
@@ -141,7 +141,7 @@ function showHistory(exercise_name) {
     ul.innerHTML = ""
 
     document.getElementById("history-exercise-name").textContent = currentExercise.exercise_name
-    result.forEach(exercise => {
+    exercises.forEach(exercise => {
         const date = new Date(exercise.date)
         const month = date.toLocaleString('default', { month: 'short' })
         const day = date.getDate()
@@ -173,11 +173,14 @@ document.getElementById("show-musclegroups").addEventListener("click", (event) =
 
 // --- Muscle Groups ---
 document.getElementById("return-from-MuscleGroups").addEventListener("click", returnToMenu)
-document.getElementById("btn-back").addEventListener("click", () => showExercises("back"))
-document.getElementById("btn-chest").addEventListener("click", () => showExercises("chest"))
-document.getElementById("btn-legs").addEventListener("click", () => showExercises("legs"))
-document.getElementById("btn-arms").addEventListener("click", () => showExercises("arms"))
-document.getElementById("btn-shoulders").addEventListener("click", () => showExercises("shoulders"))
+
+
+const groups = ['back', 'chest', 'legs', 'arms', 'shoulders']
+groups.forEach(group => {
+    document.getElementById('btn-' + group).addEventListener('click', () => {
+        showExercises(group)
+    })
+})
 
 // --- Exercise List ---
 document.getElementById("return-from-exercises").addEventListener("click", returnToMuscleGroups)
@@ -199,43 +202,10 @@ document.getElementById("update-button").addEventListener("click", () => {
 
 document.getElementById("return-from-exercise-details").addEventListener("click", returnToExerciseList)
 
-document.getElementById("confirm-update").addEventListener("click", async (event) => {
-    const workout = {
-    exercise_name: currentExercise.exercise_name,
-    muscle_group:  currentExercise.muscle_group,
-    weight: Number(document.getElementById("new-weight").value),
-    reps: Number(document.getElementById("new-reps").value)
-    }
-    
-    await postWorkout(event,workout, "update-message")
-    currentExercise = workout
-
-    document.getElementById("current-weight").textContent = `Weight: ${document.getElementById("new-weight").value} lbs`
-    document.getElementById("current-reps").textContent = `Reps: ${document.getElementById("new-reps").value}`
-    document.getElementById("new-weight").value=""
-    document.getElementById("new-reps").value=""
-    document.getElementById("update-exercise").classList.add("hidden")
-})
+document.getElementById("confirm-update").addEventListener("click", handleConfirmUpdate)
 
 // --- Log Workout ---
-document.getElementById("log-submit").addEventListener("click", async (event) => {
-    const workout = {
-        exercise_name: document.getElementById("exercise_name").value,
-        muscle_group: currentMuscleGroup,
-        weight: document.getElementById("weight").value,
-        reps: document.getElementById("reps").value
-    }
-
-    await postWorkout(event,workout, "log-message")
-
-    document.getElementById("exercise_name").value = ""
-    document.getElementById("weight").value = ""
-    document.getElementById("reps").value = ""
-    
-}
-)
+document.getElementById("log-submit").addEventListener("click",handleLogSubmit)
 document.getElementById("return-from-log").addEventListener("click", returnToExerciseList)
 
 
-getWorkouts()
-getHistory()

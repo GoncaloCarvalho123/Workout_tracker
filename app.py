@@ -47,20 +47,25 @@ def index():
 
 @app.route('/workout', methods=['GET'])
 def getWorkout():
+    group = request.args.get('muscle_group')
     latest_workouts = {}
-    for workout in Workout.query.all():
+    workouts = Workout.query.filter_by(muscle_group=group).all() if group else Workout.query.all()
+
+    for workout in workouts:
         if workout.exercise_name not in latest_workouts:
             latest_workouts[workout.exercise_name] = workout
         elif workout.exercise_name in latest_workouts:
             if workout.date > latest_workouts[workout.exercise_name].date:
                 latest_workouts[workout.exercise_name] = workout
+
     return jsonify([w.to_dict() for w in latest_workouts.values()])
 
 
 
 @app.route('/workout/history', methods=['GET'])
 def getWorkoutHistory():
-    workouts_list = Workout.query.order_by(Workout.date.desc()).all()
+    name = request.args.get('exercise_name')
+    workouts_list = Workout.query.filter_by(exercise_name = name).order_by(Workout.date.desc()).all() if name else Workout.query.order_by(Workout.date.desc()).all()
     return jsonify([w.to_dict() for w in workouts_list]), 200
 
 
@@ -89,9 +94,6 @@ def postWorkout():
         return jsonify({"error": "Missing required field"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-
 
 
 @app.route('/workout/<int:id>', methods=['DELETE'])
