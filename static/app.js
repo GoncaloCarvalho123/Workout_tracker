@@ -7,7 +7,6 @@
 let currentMuscleGroup = ""
 let currentExercise = null
 
-
 // ======================= API CALLS ============================
 
 // sends a new workout to POST api
@@ -24,7 +23,13 @@ async function postWorkout(event, workout, message) {
 
     const result = await r.json()
     if (r.ok) {
-    document.getElementById(message).textContent = result["message"]
+        document.getElementById(message).textContent = result["message"]
+        if (result.new_rm) {
+            const prMsg = document.getElementById("congratulations-message")
+            prMsg.textContent = "New PR! 🎉"
+            prMsg.classList.remove("hidden")
+            setTimeout(() => { prMsg.classList.add("hidden") }, 2000)
+        }
     }
     else {
         document.getElementById(message).textContent = result["error"]
@@ -72,6 +77,19 @@ async function handleConfirmUpdate() {
     document.getElementById("update-exercise").classList.add("hidden")
 }
 
+async function handleDelete() {
+    const r = await fetch(`/workout?exercise_name=${encodeURIComponent(currentExercise.exercise_name)}`, {
+        method: "DELETE"
+    })
+
+    const result = await r.json()
+
+    if (r.ok) {
+        returnToExerciseList()
+    } else {
+        console.error(result["error"])
+    }
+}
 // ======================= UI HELPERS ======================
 
 function hideMenu() {
@@ -131,7 +149,7 @@ async function showExercises(bodypart) {
 }
 
 async function showHistory(exercise_name) {
-    const r = await fetch(`/workout/history?exercise_name=${exercise_name}`)
+    const r = await fetch(`/workout/history?exercise_name=${encodeURIComponent(exercise_name)}`)
     const exercises = await r.json()
 
     document.querySelectorAll(".section").forEach(button => button.classList.add("hidden"))
@@ -193,6 +211,8 @@ document.getElementById("add").addEventListener("click", () => {
 document.getElementById("history").addEventListener("click",() => {
     showHistory(currentExercise.exercise_name)
 })
+
+document.getElementById("delete-button").addEventListener("click", handleDelete)
 
 document.getElementById("return-from-history").addEventListener("click", returnToExerciseList)
 

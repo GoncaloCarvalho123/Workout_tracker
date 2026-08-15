@@ -8,7 +8,6 @@ from prometheus_flask_exporter import PrometheusMetrics
 import os
 
 load_dotenv()
-
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 db = SQLAlchemy(app)
@@ -24,6 +23,7 @@ class Workout(db.Model):
     exercise_name = db.Column(db.String(50), nullable=False)
     weight = db.Column(db.Float, nullable=False)
     reps = db.Column(db.Integer, nullable=False)
+    rm = db.Column(db.Integer, nullable=True)
 
     def to_dict(self):
         return {
@@ -32,14 +32,21 @@ class Workout(db.Model):
             "exercise_name": self.exercise_name,
             "weight": self.weight,
             "reps": self.reps,
-            "date":self.date.isoformat() if self.date else None
+            "date":self.date.isoformat() if self.date else None,
         }
 
 with app.app_context():
     db.create_all()
 
 
+# ==============  HELPERS ============
+def calculateRM(weight, reps):
+    RM = weight * (1+(reps/30))
+    return RM
+
+personal_records = {}
 # =============== ROUTES ===============
+
 
 @app.route('/')
 def index():
@@ -70,7 +77,6 @@ def getWorkoutHistory():
 
 
 
-
 @app.route('/workout', methods=['POST'])
 def postWorkout():
     try:
@@ -80,29 +86,39 @@ def postWorkout():
         
         if float(data["weight"]) <= 0 or float(data["reps"]) <= 0:
             return jsonify({"error": "Weight and reps must be greater than 0"}), 400
-        
+
+        rep_max = calculateRM(float(data["weight"]), int(data["reps"]))
         workout = Workout(
             muscle_group=data["muscle_group"],
             exercise_name=data["exercise_name"],
             weight=data["weight"],
-            reps=data["reps"]
+            reps=data["reps"],
+            rm=rep_max
         )
+        new_rm = False
+        existing_max = db.session.query(db.func.max(Workout.rm)).filter_by(exercise_name=data["exercise_name"]).scalar()
+        if existing_max is not None:
+            if workout.rm > existing_max:
+                new_rm = True
+
         db.session.add(workout)
         db.session.commit()
-        return jsonify({"message": "Workout added", "workout": workout.to_dict()}), 201
+        
+        return jsonify({"message": "Workout added",
+                        "workout": workout.to_dict(),
+                        "new_rm": new_rm
+                        }), 201
     except KeyError:
         return jsonify({"error": "Missing required field"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
-@app.route('/workout/<int:id>', methods=['DELETE'])
-def delete_workout(id):
+@app.route('/workout', methods=['DELETE'])
+def delete_workout():
     try:
-        workout = Workout.query.get(id)
-        if not workout:
-            return jsonify({"message": "workout was not found"}), 404
-        db.session.delete(workout)
+        name = request.args.get("exercise_name")
+        workouts = Workout.query.filter_by(exercise_name=name).delete()
         db.session.commit()
         return jsonify({"message": "workout was successfully deleted"}), 200
     except Exception as e:
@@ -113,5 +129,5 @@ def delete_workout(id):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5555, debug=False)
+    app.run(host='0.0.0.0', port=5555, debug=True)
 
