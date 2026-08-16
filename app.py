@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-from prometheus_flask_exporter import PrometheusMetrics
 
 
 load_dotenv()
@@ -15,7 +14,6 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-metrics = PrometheusMetrics(app)
 
 
 # ==================== MODELS ====================
